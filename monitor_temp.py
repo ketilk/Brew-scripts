@@ -4,6 +4,8 @@ from Interfaces.ds18b20 import DS18B20
 from Atlas.atlas import Atlas
 from Atlas.topic import *
 
+import logging
+
 def main():
   logging.basicConfig(filename='case2.log',
     filemode='a',
