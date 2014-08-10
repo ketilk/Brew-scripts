@@ -44,7 +44,7 @@ def get_subscriber_stream_tuplet(atlas, feed, topic_name, key, logger):
   return (subscriber, data_stream)
     
 def main():
-  logging.basicConfig(filename='xively_logger.log',
+  logging.basicConfig(filename=__name__ + '.log',
     filemode='a',
     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
     datefmt='%H:%M:%S',

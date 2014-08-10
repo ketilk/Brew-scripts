@@ -10,7 +10,7 @@ from Atlas.topic import *
 import logging
 
 def main():
-  logging.basicConfig(filename='temp_monitor.log',
+  logging.basicConfig(filename=__name__ + '.log',
     filemode='a',
     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
     datefmt='%H:%M:%S',
