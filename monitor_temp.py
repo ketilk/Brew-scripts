@@ -2,6 +2,7 @@
 
 import signal
 import sys
+import os
 
 from Interfaces.ds18b20 import DS18B20
 from Atlas.atlas import Atlas
@@ -9,12 +10,15 @@ from Atlas.topic import *
 
 import logging
 
+file_name = os.path.basename(__file__)
+
 def main():
-  logging.basicConfig(filename=__name__ + '.log',
+  logging.basicConfig(filename=file_name + '.log',
     filemode='a',
     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
     datefmt='%H:%M:%S',
     level=logging.DEBUG)
+  logger = logging.getLogger(__name__)
   
   sensor_publisher_tuplets = []
   
@@ -34,6 +38,8 @@ def main():
     topic = Topic(TopicDescription('temperature', 'ferm1_sensor3'), temp)
     publisher = atlas.get_publisher(topic)
     sensor_publisher_tuplets.append((sensor, publisher))
+    
+    logger.info('Objects instantiated.')
     
     while True:
       for tuplet in sensor_publisher_tuplets:

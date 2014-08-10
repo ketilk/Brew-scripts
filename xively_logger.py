@@ -2,6 +2,7 @@
 
 import signal
 import sys
+import os
 
 from Atlas.atlas import *
 from Atlas.topic import *
@@ -14,6 +15,7 @@ import logging
 
 FEED_ID = '1620077696'
 API_KEY = '71cG08OmuBBUJb13HdzO2sDCCE4zCDelFxYgPNvYm0IePRox'
+file_name = os.path.basename(__file__)
 
 xively_api = xively.XivelyAPIClient(API_KEY)
 
@@ -44,7 +46,7 @@ def get_subscriber_stream_tuplet(atlas, feed, topic_name, key, logger):
   return (subscriber, data_stream)
     
 def main():
-  logging.basicConfig(filename=__name__ + '.log',
+  logging.basicConfig(filename=file_name + '.log',
     filemode='a',
     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
     datefmt='%H:%M:%S',
