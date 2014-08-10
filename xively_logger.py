@@ -73,7 +73,7 @@ def main():
         try:
           tuplet[1].update()
         except requests.HTTPError as e:
-          logger.warning('HTTPError({0}): {1}'.format(e.errno, e.strerror)
+          logger.warning('HTTPError({0}): {1}'.format(e.errno, e.strerror))
       time.sleep(5)
     
 def signal_handler(signal, frame):
