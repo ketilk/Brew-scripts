@@ -54,7 +54,7 @@ def main():
   logger = logging.getLogger(__name__)
     
   subscriber_stream_tuplets = []
-  feed = xively_api.feeds.get('FEED_ID')
+  feed = xively_api.feeds.get(FEED_ID)
   
   with Atlas() as atlas:
     subscriber_stream_tuplets.append(get_subscriber_stream_tuplet(
