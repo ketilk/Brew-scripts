@@ -7,33 +7,34 @@ from Atlas.topic import *
 import logging
 
 def main():
-  logging.basicConfig(filename='case2.log',
+  logging.basicConfig(filename='temp_monitor.log',
     filemode='a',
     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
     datefmt='%H:%M:%S',
     level=logging.DEBUG)
-    
-  sensors = []
-  sensors.append(DS18B20('28-000004f10b89'))
-  sensors.append(DS18B20('28-000004f1f9bf'))
-  sensors.append(DS18B20('28-00000522683f'))
   
-  publishers = []
+  sensor_publisher_tuplets = []
   
   with Atlas() as atlas:
-    temp = sensors[0].get_temperature()
-    topic = Topic(TopicDescription('temperature', 'ferm1.1'), temp)
-    publishers.append(atlas.get_publisher(topic))
-    temp = sensors[1].get_temperature()
-    topic = Topic(TopicDescription('temperature', 'ferm1.2'), temp)
-    publishers.append(atlas.get_publisher(topic))
-    temp = sensors[2].get_temperature()
-    topic = Topic(TopicDescription('temperature', 'ferm1.3'), temp)
-    publishers.append(atlas.get_publisher(topic))
+    sensor = DS18B20('28-000004f10b89')
+    temp = sensor.get_temperature()
+    topic = Topic(TopicDescription('temperature', 'ferm1.sensor1'), temp)
+    publisher = atlas.get_publisher(topic)
+    sensor_publisher_tuplets.append((sensor, publisher))
+    sensor = DS18B20('28-000004f1f9bf')
+    temp = sensor.get_temperature()
+    topic = Topic(TopicDescription('temperature', 'ferm1.sensor2'), temp)
+    publisher = atlas.get_publisher(topic)
+    sensor_publisher_tuplets.append((sensor, publisher))
+    sensor = DS18B20('28-00000522683f')
+    temp = sensor.get_temperature()
+    topic = Topic(TopicDescription('temperature', 'ferm1.sensor3'), temp)
+    publisher = atlas.get_publisher(topic)
+    sensor_publisher_tuplets.append((sensor, publisher))
     
     while True:
-      for i in range(0, 3):
-        publishers[i].publish(sensors[i].get_temperature())
+      for tuplet in sensor_publisher_tuplets:
+        tuplet[1].publish(tuplet[0].get_temperature())
       time.sleep(1)
   
 if __name__ == '__main__':
