@@ -3,7 +3,7 @@
 import logging
 import time
 
-from deamon import runner
+from daemon import runner
 
 class App(object):
   
