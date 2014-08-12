@@ -16,13 +16,13 @@ import logging
 
 FEED_ID = '1620077696'
 API_KEY = '71cG08OmuBBUJb13HdzO2sDCCE4zCDelFxYgPNvYm0IePRox'
-file_name = os.path.basename(__file__)
+file_name = os.path.splitext(os.path.basename(__file__))[0]
 
 xively_api = xively.XivelyAPIClient(API_KEY)
 
 class XivelyLoggerDaemon(Daemon):
   def run(self):
-    logging.basicConfig(filename=file_name + '.log',
+    logging.basicConfig(filename='/var/log/' + file_name + '.log',
       filemode='a',
       format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
       datefmt='%H:%M:%S',
@@ -79,7 +79,7 @@ def get_subscriber_stream_tuplet(atlas, feed, topic_name, key, logger):
   return (subscriber, data_stream)
   
 if __name__ == '__main__':
-  daemon = XivelyLoggerDaemon('/tmp/xively_logger.pid')
+  daemon = XivelyLoggerDaemon('/var/run/' + file_name + '.pid')
   if len(sys.argv) == 2:
     if 'start' == sys.argv[1]:
       daemon.start()

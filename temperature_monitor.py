@@ -11,11 +11,11 @@ from Atlas.topic import *
 
 import logging
 
-file_name = os.path.basename(__file__)
+file_name = os.path.splitext(os.path.basename(__file__))[0]
 
 class TemperatureMonitorDaemon(Daemon):
   def run(self):
-    logging.basicConfig(filename=file_name + '.log',
+    logging.basicConfig(filename='/var/log/' + file_name + '.log',
       filemode='a',
       format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
       datefmt='%H:%M:%S',
@@ -49,7 +49,7 @@ class TemperatureMonitorDaemon(Daemon):
         time.sleep(1)
   
 if __name__ == '__main__':
-  daemon = TemperatureMonitorDaemon('/tmp/temperature_monitor.pid')
+  daemon = TemperatureMonitorDaemon('/var/run/' + file_name + '.pid')
   if len(sys.argv) == 2:
     if 'start' == sys.argv[1]:
       daemon.start()
