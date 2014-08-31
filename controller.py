@@ -21,7 +21,7 @@ class ControllerDaemon(Daemon):
   self.pin = OutputPin("P8_10")
   
   def run(self):
-    with Atlas() as atlas
+    with Atlas() as atlas:
       if self.state == "init":
         try:
           self.subscriber = atlas.get_subscriber(TopicDescription("temperature", 
