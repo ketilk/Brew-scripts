@@ -13,12 +13,14 @@ from Atlas.topic import *
 from Interfaces.bbio import OutputPin
 
 class ControllerDaemon(Daemon):
-  self.state = "init"
-  self.period = 5 * 60
-  self.pid = PID()
-  self.pid.setPoint(19)
-  self.update_time = 0
-  self.pin = OutputPin("P8_10")
+  def __init__(self):
+    Daemon.__init__(self)
+    self.state = "init"
+    self.period = 5 * 60
+    self.pid = PID()
+    self.pid.setPoint(19)
+    self.update_time = 0
+    self.pin = OutputPin("P8_10")
   
   def run(self):
     with Atlas() as atlas:
