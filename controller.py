@@ -15,17 +15,20 @@ from Interfaces.bbio import OutputPin
 file_name = os.path.splitext(os.path.basename(__file__))[0]
 
 class ControllerDaemon(Daemon):
-  def __init__(self):
-    Daemon.__init__(self)
+  
+  def run(self):
     self.state = "init"
     self.period = 5 * 60
     self.pid = PID()
     self.pid.setPoint(19)
     self.update_time = 0
     self.pin = OutputPin("P8_10")
-  
-  def run(self):
     with Atlas() as atlas:
+      while True:
+        self.loop()
+        time.sleep(1)
+    
+    def _loop(self):
       if self.state == "init":
         try:
           self.subscriber = atlas.get_subscriber(TopicDescription("temperature", 
@@ -46,7 +49,7 @@ class ControllerDaemon(Daemon):
         else:
           self.state = "off"
       
-      if self.state == "off":
+      elif self.state == "off":
         temperature = self.temperature.set_value(self.subscriber.topic.payload)
         pid = self.pid.update(temperature)
         self.publisher1.publish(pid)
@@ -58,7 +61,7 @@ class ControllerDaemon(Daemon):
           self.update_time = time.time()
           self.state = "on"
       
-      if self.state == "on":
+      elif self.state == "on":
         temperature = self.temperature.update(self.subscriber.topic.payload)
         pid = self.pid.update(temperature)
         self.publisher1.publish(pid)
@@ -68,8 +71,6 @@ class ControllerDaemon(Daemon):
         if self.update_time + pid * self.period < time.time():
           self.pin.set_low()
           self.state = "off"
-      
-      time.sleep(1)
 
 if __name__ == '__main__':
   daemon = ControllerDaemon('/var/run/' + file_name + '.pid')
