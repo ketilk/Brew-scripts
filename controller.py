@@ -10,7 +10,7 @@ from average import Average
 from pid import PID
 from Atlas.atlas import Atlas
 from Atlas.topic import *
-from Interfaces import OutputPin
+from Interfaces.bbio import OutputPin
 
 class ControllerDaemon(Daemon):
   self.state = "init"
