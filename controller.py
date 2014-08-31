@@ -12,6 +12,8 @@ from Atlas.atlas import Atlas
 from Atlas.topic import *
 from Interfaces.bbio import OutputPin
 
+file_name = os.path.splitext(os.path.basename(__file__))[0]
+
 class ControllerDaemon(Daemon):
   def __init__(self):
     Daemon.__init__(self)
