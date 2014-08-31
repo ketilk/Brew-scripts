@@ -62,8 +62,6 @@ class ControllerDaemon(Daemon):
       
       time.sleep(1)
 
-  def _try_init(self, atlas):
-    
 if __name__ == '__main__':
   daemon = ControllerDaemon('/var/run/' + file_name + '.pid')
   if len(sys.argv) == 2:
