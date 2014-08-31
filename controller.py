@@ -34,28 +34,33 @@ class ControllerDaemon(Daemon):
           self.publisher2 = atlas.get_publisher(topic)
           topic = Topic(TopicDescription("temperature", "ferm1_target"), 19)
           self.publisher3 = atlas.get_publisher(topic)
+          topic = Topic(TopicDescription("temperature", "ferm1_sensor1_average"), 
+                                          self.temperature.get_value())
+          self.publisher4 = atlas.get_publisher(topic)
         except AtlasError:
           pass
         else:
           self.state = "off"
       
       if self.state == "off":
-        self.temperature.set_value(self.subscriber.topic.payload)
-        pid = self.pid.update(self.temperature.get_value())
+        temperature = self.temperature.set_value(self.subscriber.topic.payload)
+        pid = self.pid.update(temperature)
         self.publisher1.publish(pid)
         self.publisher2.publish(0)
         self.publisher3.publish(19)
+        self.publisher4.publish(temperature)
         if self.update_time + self.period < time.time():
           self.pin.set_high()
           self.update_time = time.time()
           self.state = "on"
       
       if self.state == "on":
-        self.temperature.set_value(self.subscriber.topic.payload)
-        pid = self.pid.update(self.temperature.get_value())
+        temperature = self.temperature.update(self.subscriber.topic.payload)
+        pid = self.pid.update(temperature)
         self.publisher1.publish(pid)
         self.publisher2.publish(1)
         self.publisher3.publish(19)
+        self.publisher4.publish(temperature)
         if self.update_time + pid * self.period < time.time():
           self.pin.set_low()
           self.state = "off"
