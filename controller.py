@@ -17,15 +17,24 @@ file_name = os.path.splitext(os.path.basename(__file__))[0]
 class ControllerDaemon(Daemon):
   
   def run(self):
+    logging.basicConfig(filename='/var/log/' + file_name + '.log',
+      filemode='a',
+      format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+      datefmt='%H:%M:%S',
+      level=logging.INFO)
+    self.logger = logging.getLogger(__name__)
+    self.logger.info("=================Starting daemon==================")
+    
     self.state = "init"
     self.period = 5 * 60
     self.pid = PID()
     self.pid.setPoint(19)
     self.update_time = 0
     self.pin = OutputPin("P8_10")
+    
     with Atlas() as atlas:
       while True:
-        self.loop()
+        self._loop()
         time.sleep(1)
     
     def _loop(self):
@@ -45,8 +54,10 @@ class ControllerDaemon(Daemon):
                                           self.temperature.get_value())
           self.publisher4 = atlas.get_publisher(topic)
         except AtlasError:
+          self.logger.debug("Error getting subscriber.")
           pass
         else:
+          self.logger.info("Subscriber and publishers set up.")
           self.state = "off"
       
       elif self.state == "off":
