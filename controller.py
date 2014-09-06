@@ -52,51 +52,51 @@ class ControllerDaemon(Daemon):
           self.logger.exception("Caught exception in daemon main thread.")
         time.sleep(5)
     
-    def _loop(self):
-      if self.state == ControllerState.init:
-        try:
-          self.subscriber = atlas.get_subscriber(TopicDescription("temperature", 
-                                            "ferm1_sensor1"))
-          self.temperature = Average(self.subscriber.topic.payload)
-          pid = self.pid.update(self.temperature.get_value())
-          topic = Topic(TopicDescription("pid", "ferm1_pid"), pid)
-          self.publisher1 = atlas.get_publisher(topic)
-          topic = Topic(TopicDescription("state", "ferm1_heating"), 0)
-          self.publisher2 = atlas.get_publisher(topic)
-          topic = Topic(TopicDescription("temperature", "ferm1_target"), 19)
-          self.publisher3 = atlas.get_publisher(topic)
-          topic = Topic(TopicDescription("temperature", "ferm1_sensor1_average"), 
-                                          self.temperature.get_value())
-          self.publisher4 = atlas.get_publisher(topic)
-        except AtlasError:
-          self.logger.debug("Error getting subscriber.")
-          pass
-        else:
-          self.logger.info("Subscriber and publishers set up.")
-          self.state = ControllerState.off
-      
-      elif self.state == ControllerState.off:
-        temperature = self.temperature.set_value(self.subscriber.topic.payload)
-        pid = self.pid.update(temperature)
-        self.publisher1.publish(pid)
-        self.publisher2.publish(0)
-        self.publisher3.publish(19)
-        self.publisher4.publish(temperature)
-        if self.update_time + self.period < time.time():
-          self.pin.set_high()
-          self.update_time = time.time()
-          self.state = ControllerState.on
-      
-      elif self.state == ControllerState.on:
-        temperature = self.temperature.update(self.subscriber.topic.payload)
-        pid = self.pid.update(temperature)
-        self.publisher1.publish(pid)
-        self.publisher2.publish(1)
-        self.publisher3.publish(19)
-        self.publisher4.publish(temperature)
-        if self.update_time + pid * self.period < time.time():
-          self.pin.set_low()
-          self.state = ControllerState.off
+  def _loop(self):
+    if self.state == ControllerState.init:
+      try:
+        self.subscriber = atlas.get_subscriber(TopicDescription("temperature", 
+                                          "ferm1_sensor1"))
+        self.temperature = Average(self.subscriber.topic.payload)
+        pid = self.pid.update(self.temperature.get_value())
+        topic = Topic(TopicDescription("pid", "ferm1_pid"), pid)
+        self.publisher1 = atlas.get_publisher(topic)
+        topic = Topic(TopicDescription("state", "ferm1_heating"), 0)
+        self.publisher2 = atlas.get_publisher(topic)
+        topic = Topic(TopicDescription("temperature", "ferm1_target"), 19)
+        self.publisher3 = atlas.get_publisher(topic)
+        topic = Topic(TopicDescription("temperature", "ferm1_sensor1_average"), 
+                                        self.temperature.get_value())
+        self.publisher4 = atlas.get_publisher(topic)
+      except AtlasError:
+        self.logger.debug("Error getting subscriber.")
+        pass
+      else:
+        self.logger.info("Subscriber and publishers set up.")
+        self.state = ControllerState.off
+    
+    elif self.state == ControllerState.off:
+      temperature = self.temperature.set_value(self.subscriber.topic.payload)
+      pid = self.pid.update(temperature)
+      self.publisher1.publish(pid)
+      self.publisher2.publish(0)
+      self.publisher3.publish(19)
+      self.publisher4.publish(temperature)
+      if self.update_time + self.period < time.time():
+        self.pin.set_high()
+        self.update_time = time.time()
+        self.state = ControllerState.on
+    
+    elif self.state == ControllerState.on:
+      temperature = self.temperature.update(self.subscriber.topic.payload)
+      pid = self.pid.update(temperature)
+      self.publisher1.publish(pid)
+      self.publisher2.publish(1)
+      self.publisher3.publish(19)
+      self.publisher4.publish(temperature)
+      if self.update_time + pid * self.period < time.time():
+        self.pin.set_low()
+        self.state = ControllerState.off
 
 if __name__ == '__main__':
   daemon = ControllerDaemon('/var/run/' + file_name + '.pid')
