@@ -8,7 +8,7 @@ import time
 from daemon import Daemon
 from average import Average
 from pid import PID
-from Atlas.atlas import Atlas
+from Atlas.atlas import Atlas, AtlasError
 from Atlas.topic import *
 from Interfaces.bbio import OutputPin
 
