@@ -21,7 +21,7 @@ class ControllerState(object):
 
 class ControllerDaemon(Daemon):
   
-  def run(self):
+  def _init(self):
     logging.basicConfig(filename='/var/log/' + file_name + '.log',
       filemode='a',
       format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
@@ -29,18 +29,27 @@ class ControllerDaemon(Daemon):
       level=logging.INFO)
     self.logger = logging.getLogger(__name__)
     self.logger.info("=================Starting daemon==================")
-    
-    self.state = ControlState.init
+  
+    self.state = ControllerState.init
     self.period = 5 * 60
     self.pid = PID()
     self.pid.setPoint(19)
     self.update_time = 0
     self.pin = OutputPin("P8_10")
+  
+  def run(self):
+    try:
+      self._init()
+    except, e:
+      self.logger.error(str(e))
     
     with Atlas() as atlas:
       self.logger.info("starting main loop.")
       while True:
-        self._loop()
+        try:
+          self._loop()
+        except, e:
+          self.logger.error(str(e))
         time.sleep(1)
     
     def _loop(self):
