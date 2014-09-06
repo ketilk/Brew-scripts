@@ -43,6 +43,18 @@ class XivelyLoggerDaemon(Daemon):
       subscriber_stream_tuplets.append(get_subscriber_stream_tuplet(
         atlas, feed, 'temperature', 'ferm1_sensor3', logger
       ))
+      subscriber_stream_tuplets.append(get_subscriber_stream_tuplet(
+        atlas, feed, 'pid', 'ferm1_pid', logger
+      ))
+      subscriber_stream_tuplets.append(get_subscriber_stream_tuplet(
+        atlas, feed, 'state', 'ferm1_heating', logger
+      ))
+      subscriber_stream_tuplets.append(get_subscriber_stream_tuplet(
+        atlas, feed, 'temperature', 'ferm1_target', logger
+      ))
+      subscriber_stream_tuplets.append(get_subscriber_stream_tuplet(
+        atlas, feed, 'temperature', 'ferm1_sensor1_average', logger
+      ))
       while True:
         for tuplet in subscriber_stream_tuplets:
           tuplet[1].current_value = tuplet[0].topic.payload
