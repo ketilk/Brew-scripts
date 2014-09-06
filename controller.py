@@ -40,16 +40,16 @@ class ControllerDaemon(Daemon):
   def run(self):
     try:
       self._init()
-    except, e:
-      self.logger.error(str(e))
+    except:
+      self.logger.error(sys.exc_info()[0])
     
     with Atlas() as atlas:
       self.logger.info("starting main loop.")
       while True:
         try:
           self._loop()
-        except, e:
-          self.logger.error(str(e))
+        except:
+          self.logger.error(sys.exc_info()[0])
         time.sleep(1)
     
     def _loop(self):
