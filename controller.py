@@ -43,7 +43,7 @@ class ControllerDaemon(Daemon):
     except:
       self.logger.exception("Caught exception during daemon init.")
     
-    with Atlas() as atlas:
+    with Atlas() as self.atlas:
       self.logger.info("starting main loop.")
       while True:
         try:
