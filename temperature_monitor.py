@@ -21,6 +21,7 @@ class TemperatureMonitorDaemon(Daemon):
       datefmt='%H:%M:%S',
       level=logging.INFO)
     logger = logging.getLogger(__name__)
+    logger.info("=================Starting daemon==================")
   
     sensor_publisher_tuplets = []
   

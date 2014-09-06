@@ -28,6 +28,7 @@ class XivelyLoggerDaemon(Daemon):
       datefmt='%H:%M:%S',
       level=logging.INFO)
     logger = logging.getLogger(__name__)
+    logger.info("=================Starting daemon==================")
     
     subscriber_stream_tuplets = []
     feed = xively_api.feeds.get(FEED_ID)
