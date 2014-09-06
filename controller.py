@@ -53,7 +53,7 @@ class ControllerDaemon(Daemon):
         time.sleep(1)
     
     def _loop(self):
-      if self.state == ControlState.init:
+      if self.state == ControllerState.init:
         try:
           self.subscriber = atlas.get_subscriber(TopicDescription("temperature", 
                                             "ferm1_sensor1"))
@@ -73,9 +73,9 @@ class ControllerDaemon(Daemon):
           pass
         else:
           self.logger.info("Subscriber and publishers set up.")
-          self.state = ControlState.off
+          self.state = ControllerState.off
       
-      elif self.state == ControlState.off:
+      elif self.state == ControllerState.off:
         temperature = self.temperature.set_value(self.subscriber.topic.payload)
         pid = self.pid.update(temperature)
         self.publisher1.publish(pid)
@@ -85,9 +85,9 @@ class ControllerDaemon(Daemon):
         if self.update_time + self.period < time.time():
           self.pin.set_high()
           self.update_time = time.time()
-          self.state = ControlState.on
+          self.state = ControllerState.on
       
-      elif self.state == ControlState.on:
+      elif self.state == ControllerState.on:
         temperature = self.temperature.update(self.subscriber.topic.payload)
         pid = self.pid.update(temperature)
         self.publisher1.publish(pid)
@@ -96,7 +96,7 @@ class ControllerDaemon(Daemon):
         self.publisher4.publish(temperature)
         if self.update_time + pid * self.period < time.time():
           self.pin.set_low()
-          self.state = ControlState.off
+          self.state = ControllerState.off
 
 if __name__ == '__main__':
   daemon = ControllerDaemon('/var/run/' + file_name + '.pid')
