@@ -55,19 +55,19 @@ class ControllerDaemon(Daemon):
   def _loop(self):
     if self.state == ControllerState.init:
       try:
-        self.subscriber = atlas.get_subscriber(TopicDescription("temperature", 
+        self.subscriber = self.atlas.get_subscriber(TopicDescription("temperature", 
                                           "ferm1_sensor1"))
         self.temperature = Average(self.subscriber.topic.payload)
         pid = self.pid.update(self.temperature.get_value())
         topic = Topic(TopicDescription("pid", "ferm1_pid"), pid)
-        self.publisher1 = atlas.get_publisher(topic)
+        self.publisher1 = self.atlas.get_publisher(topic)
         topic = Topic(TopicDescription("state", "ferm1_heating"), 0)
-        self.publisher2 = atlas.get_publisher(topic)
+        self.publisher2 = self.atlas.get_publisher(topic)
         topic = Topic(TopicDescription("temperature", "ferm1_target"), 19)
-        self.publisher3 = atlas.get_publisher(topic)
+        self.publisher3 = self.atlas.get_publisher(topic)
         topic = Topic(TopicDescription("temperature", "ferm1_sensor1_average"), 
                                         self.temperature.get_value())
-        self.publisher4 = atlas.get_publisher(topic)
+        self.publisher4 = self.atlas.get_publisher(topic)
       except AtlasError:
         self.logger.debug("Error getting subscriber.")
         pass
