@@ -41,7 +41,7 @@ class ControllerDaemon(Daemon):
     try:
       self._init()
     except:
-      self.logger.error(sys.exc_info()[0])
+      self.logger.exception("Caught exception during daemon init.")
     
     with Atlas() as atlas:
       self.logger.info("starting main loop.")
@@ -49,8 +49,8 @@ class ControllerDaemon(Daemon):
         try:
           self._loop()
         except:
-          self.logger.error(sys.exc_info()[0])
-        time.sleep(1)
+          self.logger.exception("Caught exception in daemon main thread.")
+        time.sleep(5)
     
     def _loop(self):
       if self.state == ControllerState.init:
