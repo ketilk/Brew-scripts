@@ -1,55 +1,51 @@
 #!/usr/bin/python
 
-import signal
 import sys
 import os
 
-from daemon import Daemon
 from Interfaces.ds18b20 import DS18B20
-from Atlas.atlas import Atlas
+from Atlas.atlas import AtlasDaemon
 from Atlas.topic import *
 
 import logging
 
 file_name = os.path.splitext(os.path.basename(__file__))[0]
 
-class TemperatureMonitorDaemon(Daemon):
-  def run(self):
-    logging.basicConfig(filename='/var/log/' + file_name + '.log',
-      filemode='a',
-      format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-      datefmt='%H:%M:%S',
-      level=logging.INFO)
-    logger = logging.getLogger(__name__)
-    logger.info("=================Starting daemon==================")
+class TemperatureMonitorDaemon(AtlasDaemon):
   
-    sensor_publisher_tuplets = []
-  
-    with Atlas() as atlas:
-      sensor = DS18B20('28-000004f10b89')
-      temp = sensor.get_temperature()
-      topic = Topic(TopicDescription('temperature', 'ferm1_sensor1'), temp)
-      publisher = atlas.get_publisher(topic)
-      sensor_publisher_tuplets.append((sensor, publisher))
-      sensor = DS18B20('28-000004f1f9bf')
-      temp = sensor.get_temperature()
-      topic = Topic(TopicDescription('temperature', 'ferm1_sensor2'), temp)
-      publisher = atlas.get_publisher(topic)
-      sensor_publisher_tuplets.append((sensor, publisher))
-      sensor = DS18B20('28-00000522683f')
-      temp = sensor.get_temperature()
-      topic = Topic(TopicDescription('temperature', 'ferm1_sensor3'), temp)
-      publisher = atlas.get_publisher(topic)
-      sensor_publisher_tuplets.append((sensor, publisher))
+  def _init(self):
+    super(TemperatureMonitorDaemon, self)._init()
+    self.logger = logging.getLogger(__name__)
+    logger.info("=================Instantiating daemon==================")
+    self.sensor_publisher_tuplets = []
+    sensor = DS18B20('28-000004f10b89')
+    temp = sensor.get_temperature()
+    topic = Topic(TopicDescription('temperature', 'ferm1_sensor1'), temp)
+    publisher = atlas.get_publisher(topic)
+    self.sensor_publisher_tuplets.append((sensor, publisher))
+    sensor = DS18B20('28-000004f1f9bf')
+    temp = sensor.get_temperature()
+    topic = Topic(TopicDescription('temperature', 'ferm1_sensor2'), temp)
+    publisher = atlas.get_publisher(topic)
+    self.sensor_publisher_tuplets.append((sensor, publisher))
+    sensor = DS18B20('28-00000522683f')
+    temp = sensor.get_temperature()
+    topic = Topic(TopicDescription('temperature', 'ferm1_sensor3'), temp)
+    publisher = atlas.get_publisher(topic)
+    self.sensor_publisher_tuplets.append((sensor, publisher))
+    self.logger.info('Ready to start monitoring.')
     
-      logger.info('Objects instantiated.')
-    
-      while True:
-        for tuplet in sensor_publisher_tuplets:
-          tuplet[1].publish(tuplet[0].get_temperature())
-        time.sleep(1)
+  def _loop(self):
+      for tuplet in sensor_publisher_tuplets:
+        tuplet[1].publish(tuplet[0].get_temperature())
+      time.sleep(1)
   
 if __name__ == '__main__':
+  logging.basicConfig(filename='/var/log/' + file_name + '.log',
+    filemode='a',
+    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+    datefmt='%H:%M:%S',
+    level=logging.INFO)
   daemon = TemperatureMonitorDaemon('/var/run/' + file_name + '.pid')
   if len(sys.argv) == 2:
     if 'start' == sys.argv[1]:

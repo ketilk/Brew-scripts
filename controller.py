@@ -5,10 +5,9 @@ import os
 import logging
 import time
 
-from daemon import Daemon
 from average import Average
 from pid import PID
-from Atlas.atlas import Atlas, AtlasError
+from Atlas.atlas import AtlasDaemon, AtlasError
 from Atlas.topic import *
 from Interfaces.bbio import OutputPin
 
@@ -22,13 +21,8 @@ class ControllerState(object):
 class ControllerDaemon(Daemon):
   
   def _init(self):
-    logging.basicConfig(filename='/var/log/' + file_name + '.log',
-      filemode='a',
-      format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-      datefmt='%H:%M:%S',
-      level=logging.INFO)
     self.logger = logging.getLogger(__name__)
-    self.logger.info("=================Starting daemon==================")
+    self.logger.info("=================Instantiating daemon==================")
   
     self.state = ControllerState.init
     self.period = 5 * 60
@@ -36,35 +30,20 @@ class ControllerDaemon(Daemon):
     self.pid.setPoint(19)
     self.update_time = 0
     self.pin = OutputPin("P8_10")
-  
-  def run(self):
-    try:
-      self._init()
-    except:
-      self.logger.exception("Caught exception during daemon init.")
-    
-    with Atlas() as self.atlas:
-      self.logger.info("starting main loop.")
-      while True:
-        try:
-          self._loop()
-        except:
-          self.logger.exception("Caught exception in daemon main thread.")
-        time.sleep(5)
     
   def _loop(self):
     if self.state == ControllerState.init:
       try:
-        self.subscriber = self.atlas.get_subscriber(TopicDescription("temperature", 
+        self.subscriber = self.get_subscriber(TopicDescription("temperature", 
                                           "ferm1_sensor1"))
         self.temperature = Average(self.subscriber.topic.payload)
         pid = self.pid.update(self.temperature.get_value())
         topic = Topic(TopicDescription("pid", "ferm1_pid"), pid)
-        self.publisher1 = self.atlas.get_publisher(topic)
+        self.publisher1 = self.get_publisher(topic)
         topic = Topic(TopicDescription("state", "ferm1_heating"), 0)
-        self.publisher2 = self.atlas.get_publisher(topic)
+        self.publisher2 = self.get_publisher(topic)
         topic = Topic(TopicDescription("temperature", "ferm1_target"), 19)
-        self.publisher3 = self.atlas.get_publisher(topic)
+        self.publisher3 = self.get_publisher(topic)
         topic = Topic(TopicDescription("temperature", "ferm1_sensor1_average"), 
                                         self.temperature.get_value())
         self.publisher4 = self.atlas.get_publisher(topic)
@@ -99,6 +78,11 @@ class ControllerDaemon(Daemon):
         self.state = ControllerState.off
 
 if __name__ == '__main__':
+  logging.basicConfig(filename='/var/log/' + file_name + '.log',
+    filemode='a',
+    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+    datefmt='%H:%M:%S',
+    level=logging.INFO)
   daemon = ControllerDaemon('/var/run/' + file_name + '.pid')
   if len(sys.argv) == 2:
     if 'start' == sys.argv[1]:
