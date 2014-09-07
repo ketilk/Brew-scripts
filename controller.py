@@ -76,7 +76,7 @@ class ControllerDaemon(Daemon):
         self.state = ControllerState.off
     
     elif self.state == ControllerState.off:
-      temperature = self.temperature.set_value(self.subscriber.topic.payload)
+      temperature = self.temperature.update(self.subscriber.topic.payload)
       pid = self.pid.update(temperature)
       self.publisher1.publish(pid)
       self.publisher2.publish(0)
