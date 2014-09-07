@@ -37,7 +37,7 @@ class TemperatureMonitorDaemon(AtlasDaemon):
   def _loop(self):
     super(TemperatureMonitorDaemon, self)._loop()
     
-    for tuplet in sensor_publisher_tuplets:
+    for tuplet in self.sensor_publisher_tuplets:
       tuplet[1].publish(tuplet[0].get_temperature())
     time.sleep(1)
   
