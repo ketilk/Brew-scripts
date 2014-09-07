@@ -14,9 +14,6 @@ file_name = os.path.splitext(os.path.basename(__file__))[0]
 class TemperatureMonitorDaemon(AtlasDaemon):
   
   def _init(self):
-    super(TemperatureMonitorDaemon, self)._init()
-    self.logger = logging.getLogger(__name__)
-    logger.info("=================Instantiating daemon==================")
     self.sensor_publisher_tuplets = []
     sensor = DS18B20('28-000004f10b89')
     temp = sensor.get_temperature()
@@ -33,7 +30,7 @@ class TemperatureMonitorDaemon(AtlasDaemon):
     topic = Topic(TopicDescription('temperature', 'ferm1_sensor3'), temp)
     publisher = atlas.get_publisher(topic)
     self.sensor_publisher_tuplets.append((sensor, publisher))
-    self.logger.info('Ready to start monitoring.')
+    self.logger.info('Monitorer initialised.')
     
   def _loop(self):
       for tuplet in sensor_publisher_tuplets:

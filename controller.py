@@ -11,8 +11,6 @@ from Atlas.atlas import AtlasDaemon, AtlasError
 from Atlas.topic import *
 from Interfaces.bbio import OutputPin
 
-file_name = os.path.splitext(os.path.basename(__file__))[0]
-
 class ControllerState(object):
   init = 1
   off = 2
@@ -21,15 +19,13 @@ class ControllerState(object):
 class ControllerDaemon(Daemon):
   
   def _init(self):
-    self.logger = logging.getLogger(__name__)
-    self.logger.info("=================Instantiating daemon==================")
-  
     self.state = ControllerState.init
     self.period = 5 * 60
     self.pid = PID()
     self.pid.setPoint(19)
     self.update_time = 0
     self.pin = OutputPin("P8_10")
+    self.logger.info("Controller initialized.")
     
   def _loop(self):
     if self.state == ControllerState.init:
@@ -78,6 +74,7 @@ class ControllerDaemon(Daemon):
         self.state = ControllerState.off
 
 if __name__ == '__main__':
+  file_name = os.path.splitext(os.path.basename(__file__))[0]
   logging.basicConfig(filename='/var/log/' + file_name + '.log',
     filemode='a',
     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
