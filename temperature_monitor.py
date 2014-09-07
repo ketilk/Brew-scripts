@@ -42,7 +42,9 @@ if __name__ == '__main__':
     filemode='a',
     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
     datefmt='%H:%M:%S',
-    level=logging.INFO)
+    level=logging.DEBUG)
+  logger = logging.getLogger(__name__)
+  logger.debug("Starting monitorer daemon.")
   daemon = TemperatureMonitorDaemon('/var/run/' + file_name + '.pid')
   if len(sys.argv) == 2:
     if 'start' == sys.argv[1]:
