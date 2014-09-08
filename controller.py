@@ -2,7 +2,6 @@
 
 import sys
 import os
-import logging
 import time
 
 from average import Average
@@ -16,7 +15,7 @@ class ControllerState(object):
   off = 2
   on = 3
 
-class ControllerDaemon(Daemon):
+class ControllerDaemon(AtlasDaemon):
   
   def _init(self):
     self.state = ControllerState.init
