@@ -5,7 +5,7 @@ import os
 
 from Interfaces.ds18b20 import DS18B20
 from Atlas.atlas import AtlasDaemon
-from Atlas.topic import *
+from Atlas.topic import Topic
 
 import logging
 
@@ -14,22 +14,20 @@ file_name = os.path.splitext(os.path.basename(__file__))[0]
 class TemperatureMonitorDaemon(AtlasDaemon):
   
   def _init(self):
-    super(TemperatureMonitorDaemon, self)._init()
-    
     self.sensor_publisher_tuplets = []
     sensor = DS18B20('28-000004f10b89')
     temp = sensor.get_temperature()
-    topic = Topic(TopicDescription('temperature', 'ferm1_sensor1'), temp)
+    topic = Topic('temperature', 'ferm1_sensor1', temp)
     publisher = self.get_publisher(topic)
     self.sensor_publisher_tuplets.append((sensor, publisher))
     sensor = DS18B20('28-000004f1f9bf')
     temp = sensor.get_temperature()
-    topic = Topic(TopicDescription('temperature', 'ferm1_sensor2'), temp)
+    topic = Topic('temperature', 'ferm1_sensor2', temp)
     publisher = self.get_publisher(topic)
     self.sensor_publisher_tuplets.append((sensor, publisher))
     sensor = DS18B20('28-00000522683f')
     temp = sensor.get_temperature()
-    topic = Topic(TopicDescription('temperature', 'ferm1_sensor3'), temp)
+    topic = Topic('temperature', 'ferm1_sensor3', temp)
     publisher = self.get_publisher(topic)
     self.sensor_publisher_tuplets.append((sensor, publisher))
     self.logger.info('Monitorer initialised.')
