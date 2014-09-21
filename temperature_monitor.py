@@ -14,7 +14,7 @@ class TemperatureMonitorDaemon(AtlasDaemon):
     
   def _loop(self):
     self.topic.data = self.sensor.get_temperature()
-    self.publisher.publish(topic)
+    self.publisher.publish(self.topic)
     time.sleep(1)
 
 import logging
