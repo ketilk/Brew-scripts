@@ -3,6 +3,7 @@
 from Interfaces.ds18b20 import DS18B20
 from Atlas.atlas import AtlasDaemon
 from Atlas.topic import Topic
+import time
 
 class TemperatureMonitorDaemon(AtlasDaemon):
   
