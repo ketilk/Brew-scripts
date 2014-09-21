@@ -10,7 +10,7 @@ class TemperatureMonitorDaemon(AtlasDaemon):
     self.sensor = DS18B20('28-000004f10b89')
     temp = self.sensor.get_temperature()
     self.topic = Topic('temperature', 'ferm1', temp)
-    self.publisher = self.get_publisher(topic)
+    self.publisher = self.get_publisher(self.topic)
     
   def _loop(self):
     self.topic.data = self.sensor.get_temperature()
