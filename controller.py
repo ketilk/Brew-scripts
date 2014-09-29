@@ -29,7 +29,7 @@ class ControllerDaemon(AtlasDaemon):
     self.heater = State.off
     
     self.subscriber = self.get_subscriber(Topic("temperature", "ferm1_wort"))
-    self.wort_temp = Average(self.subscriber.get_topic())
+    self.wort_temp = Average(self.subscriber.topic.data)
     topic = Topic("temperature, ferm1_wort_average", self.wort_temp.get_value())
     self.publisher_average_temp = self.get_publisher(topic)
     topic = Topic("pid", "ferm1_pid", 
