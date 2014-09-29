@@ -39,7 +39,7 @@ class ControllerDaemon(AtlasDaemon):
     self.publisher_heater = self.get_publisher(topic)
     topic = Topic("temperature", "ferm1_target", self.temp_target)
     self.publisher_target = self.get_publisher(topic)
-    self.topic = Topic("percentage", "ferm1_duty_cycle", self.duty_cycle)
+    topic = Topic("percentage", "ferm1_duty_cycle", self.duty_cycle)
     self.publisher_duty_cycle = self.get_publisher(topic)
     
     self.logger.info("Controller initialized.")
