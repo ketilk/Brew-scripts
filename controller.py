@@ -60,7 +60,7 @@ class ControllerDaemon(AtlasDaemon):
       self.update_time = time.time()
       self.heater = State.on
       self.pin.set_high()
-    elif self.update_time + self.duty_cycle < time.time():
+    elif self.update_time + self.duty_cycle * self.period < time.time():
       self.heater = State.off
       self.pin.set_low()
       
