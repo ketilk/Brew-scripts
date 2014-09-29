@@ -35,9 +35,9 @@ class ControllerDaemon(AtlasDaemon):
     topic = Topic("pid", "ferm1_pid", 
                   self.pid.update(self.wort_temp.get_value()))
     self.publisher_pid = self.get_publisher(topic)
-    topic = Topic(TopicDescription("state", "ferm1_heating"), self.heater)
+    topic = Topic("state", "ferm1_heating", self.heater)
     self.publisher_heater = self.get_publisher(topic)
-    topic = Topic(TopicDescription("temperature", "ferm1_target"), self.temp_target)
+    topic = Topic("temperature", "ferm1_target", self.temp_target)
     self.publisher_target = self.get_publisher(topic)
     self.topic = Topic("percentage", "ferm1_duty_cycle", self.duty_cycle)
     self.publisher_duty_cycle = self.get_publisher(topic)
