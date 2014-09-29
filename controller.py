@@ -46,7 +46,7 @@ class ControllerDaemon(AtlasDaemon):
     
   def _loop(self):
     self.wort_temp.update(self.subscriber.topic.data)
-    self.publisher_average.publish(self.wort_temp.get_value())
+    self.publisher_average_temp.publish(self.wort_temp.get_value())
     pid = self.pid.update(self.wort_temp.get_value())
     self.publisher_pid.publish(pid)
     self.publisher_target.publish(self.temp_target)
