@@ -3,6 +3,7 @@
 import sys
 import os
 import time
+import logging
 
 from average import Average
 from pid import PID
