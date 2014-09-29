@@ -10,12 +10,11 @@ class TemperatureMonitorDaemon(AtlasDaemon):
   def _init(self):
     self.sensor = DS18B20('28-000004f10b89')
     temp = self.sensor.get_temperature()
-    self.topic = Topic('temperature', 'ferm1', temp)
+    self.topic = Topic('temperature', 'ferm1_wort', temp)
     self.publisher = self.get_publisher(self.topic)
     
   def _loop(self):
-    self.topic.data = self.sensor.get_temperature()
-    self.publisher.publish(self.topic)
+    self.publisher.publish(self.sensor.get_temperature())
     time.sleep(1)
 
 import logging

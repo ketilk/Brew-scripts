@@ -7,70 +7,64 @@ import time
 from average import Average
 from pid import PID
 from Atlas.atlas import AtlasDaemon, AtlasError
-from Atlas.topic import *
+from Atlas.topic import Topic
 from Interfaces.bbio import OutputPin
 
-class ControllerState(object):
-  init = 1
-  off = 2
-  on = 3
+class State(object):
+  off = 0
+  on = 1
 
 class ControllerDaemon(AtlasDaemon):
   
   def _init(self):
-    self.state = ControllerState.init
-    self.period = 5 * 60
-    self.pid = PID()
-    self.pid.setPoint(19)
+    self.logger.info("Initializing controller daemon.")
+    self.temp_target = 19
     self.update_time = 0
+    self.period = 5 * 60
+    self.duty_cycle = 0
+    self.pid = PID()
+    self.pid.setPoint(self.temp_target)
     self.pin = OutputPin("P8_10")
+    self.heater = State.off
+    
+    self.subscriber = self.get_subscriber(Topic("temperature", "ferm1_wort"))
+    self.wort_temp = Average(self.subscriber.get_topic())
+    topic = Topic("temperature, ferm1_wort_average", self.wort_temp.get_value())
+    self.publisher_average_temp = self.get_publisher(topic)
+    topic = Topic("pid", "ferm1_pid", 
+                  self.pid.update(self.wort_temp.get_value()))
+    self.publisher_pid = self.get_publisher(topic)
+    topic = Topic(TopicDescription("state", "ferm1_heating"), self.heater)
+    self.publisher_heater = self.get_publisher(topic)
+    topic = Topic(TopicDescription("temperature", "ferm1_target"), self.temp_target)
+    self.publisher_target = self.get_publisher(topic)
+    self.topic = Topic("percentage", "ferm1_duty_cycle", self.duty_cycle)
+    self.publisher_duty_cycle = self.get_publisher(topic)
+    
     self.logger.info("Controller initialized.")
     
   def _loop(self):
-    if self.state == ControllerState.init:
-      try:
-        self.subscriber = self.get_subscriber(TopicDescription("temperature", 
-                                          "ferm1_sensor1"))
-        self.temperature = Average(self.subscriber.topic.payload)
-        pid = self.pid.update(self.temperature.get_value())
-        topic = Topic(TopicDescription("pid", "ferm1_pid"), pid)
-        self.publisher1 = self.get_publisher(topic)
-        topic = Topic(TopicDescription("state", "ferm1_heating"), 0)
-        self.publisher2 = self.get_publisher(topic)
-        topic = Topic(TopicDescription("temperature", "ferm1_target"), 19)
-        self.publisher3 = self.get_publisher(topic)
-        topic = Topic(TopicDescription("temperature", "ferm1_sensor1_average"), 
-                                        self.temperature.get_value())
-        self.publisher4 = self.atlas.get_publisher(topic)
-      except AtlasError:
-        self.logger.debug("Error getting subscriber.")
-        pass
-      else:
-        self.logger.info("Subscriber and publishers set up.")
-        self.state = ControllerState.off
+    self.wort_temp.update(self.subscriber.topic.data)
+    self.publisher_average.publish(self.wort_temp.get_value())
+    pid = self.pid.update(self.wort_temp.get_value())
+    self.publisher_pid.publish(pid)
+    self.publisher_target.publish(self.temp_target)
+    if pid < 1:
+      self.duty_cycle = pid
+    else:
+      self.duty_cycle = 1
+    self.publisher_duty_cycle.publish(self.duty_cycle)
     
-    elif self.state == ControllerState.off:
-      temperature = self.temperature.update(self.subscriber.topic.payload)
-      pid = self.pid.update(temperature)
-      self.publisher1.publish(pid)
-      self.publisher2.publish(0)
-      self.publisher3.publish(19)
-      self.publisher4.publish(temperature)
-      if self.update_time + self.period < time.time():
-        self.pin.set_high()
-        self.update_time = time.time()
-        self.state = ControllerState.on
-    
-    elif self.state == ControllerState.on:
-      temperature = self.temperature.update(self.subscriber.topic.payload)
-      pid = self.pid.update(temperature)
-      self.publisher1.publish(pid)
-      self.publisher2.publish(1)
-      self.publisher3.publish(19)
-      self.publisher4.publish(temperature)
-      if self.update_time + pid * self.period < time.time():
-        self.pin.set_low()
-        self.state = ControllerState.off
+    if self.update_time + self.period < time.time():
+      self.update_time = time.time()
+      self.heater = State.on
+      self.pin.set_high()
+    elif self.update_time + self.duty_cycle < time.time():
+      self.heater = State.off
+      self.pin.set_low()
+      
+    self.publisher_heater.publish(self.heater)
+    time.sleep(1)
 
 if __name__ == '__main__':
   file_name = os.path.splitext(os.path.basename(__file__))[0]
