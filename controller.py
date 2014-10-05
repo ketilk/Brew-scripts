@@ -26,6 +26,7 @@ class ControllerDaemon(AtlasDaemon):
     self.pid = PID()
     self.pid.setPoint(self.temp_target)
     self.pin = OutputPin("P8_10")
+    self.pin.set_low()
     self.heater = State.off
     
     self.subscriber = self.get_subscriber(Topic("temperature", "ferm1_wort"))
@@ -58,11 +59,13 @@ class ControllerDaemon(AtlasDaemon):
     
     if self.update_time + self.period < time.time():
       self.update_time = time.time()
-      self.heater = State.on
-      self.pin.set_high()
+      if 0 < self.duty_cycle:
+        self.heater = State.on
+        self.pin.set_high()
     elif self.update_time + self.duty_cycle * self.period < time.time():
-      self.heater = State.off
-      self.pin.set_low()
+      if self.heater == State.on:
+        self.heater = State.off
+        self.pin.set_low()
       
     self.publisher_heater.publish(self.heater)
     time.sleep(1)
