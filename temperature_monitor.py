@@ -26,7 +26,7 @@ class TemperatureMonitorDaemon(AtlasDaemon):
     self.sensors.append((sensor, publisher))
     
   def _loop(self):
-    for sensor in sensors:
+    for sensor in self.sensors:
       sensor[1].publish(sensor[0].get_temperature())
     time.sleep(1)
 

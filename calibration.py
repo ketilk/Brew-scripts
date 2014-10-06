@@ -10,7 +10,7 @@ from Atlas.atlas import AtlasDaemon, AtlasError
 from Atlas.topic import Topic
 from Interfaces.bbio import OutputPin
 
-class CalibrationDaemon(object):
+class CalibrationDaemon(AtlasDaemon):
   def _init(self):
     self.pin = OutputPin("P8_10")
     self.pin.set_low()
