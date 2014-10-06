@@ -10,8 +10,11 @@ from Atlas.atlas import AtlasDaemon, AtlasError
 from Atlas.topic import Topic
 from Interfaces.bbio import OutputPin
 
+from __future__ import print_function
+
 class CalibrationDaemon(AtlasDaemon):
   def _init(self):
+    self.atlas.register_topic_handler(self._logger)
     self.pin = OutputPin("P8_10")
     self.pin.set_low()
     self.t0 = time.time()
@@ -21,7 +24,11 @@ class CalibrationDaemon(AtlasDaemon):
     self.t_cycle = self.t0
     self.cycle_period = 5 * 60 #5 minutes
     self.power = 0.2 #20% of full power
+    self.t_log = self.t0
+    self.log_period = 20
     self.triplets = []
+    self.topics = []
+    self.data_file = "data.csv"
     
     subscriber = self.get_subscriber(Topic("temperature", "sensor1"))
     average_temp = Average(subscriber.topic.data, 10)
@@ -69,6 +76,18 @@ class CalibrationDaemon(AtlasDaemon):
       triple[2].publish(triple[1].get_value())
     self.heater_publisher.publish(self.pin.get_state())
     time.sleep(1)
+  
+  def _logger(topic):
+    if topic not in self.topics:
+      self.topics.append(topic)
+    else:
+      for _topic in self.topics:
+        if topic == _topic:
+          _topic.data = topic.data
+    
+    if self.t_log + self.log_period < time.time():
+      for _topic in self.topics:
+        print(str(topic), self.data_file)
 
 if __name__ == '__main__':
   file_name = os.path.splitext(os.path.basename(__file__))[0]
