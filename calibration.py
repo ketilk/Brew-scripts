@@ -52,14 +52,14 @@ class CalibrationDaemon(AtlasDaemon):
       if self.pin.get_state():
         self.pin.set_low()
       self.stage_publisher.publish(1)
-    elif time.time() < self.t.0 + self.stage1 + self.stage2:
+    elif time.time() < self.t0 + self.stage1 + self.stage2:
       self.stage_publisher.publish(2)
       if self.t_cycle + self.cycle_period < time.time():
         self.t_cycle = time.time()
         self.pin.set_high()
       elif self.t_cycle + self.power * self.cycle < time.time():
         self.pin.set_low()
-    elif self.t.0 + self.stage1 + self.stage2 < time.time():
+    elif self.t0 + self.stage1 + self.stage2 < time.time():
       if self.pin.get_state():
         self.pin.set_low()
       self.stage_publisher.publish(3)
