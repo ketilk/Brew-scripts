@@ -22,6 +22,7 @@ class TemperatureDaemon(AtlasDaemon):
       self.sensors.append((sensor, publisher))
       self.logger.info('DS18B20 Sensors sensor instantiated: ' 
                         + option + ', ' + sensor_id)
+    return True
     
   def _loop(self):
     for sensor in self.sensors:
