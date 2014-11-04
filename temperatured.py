@@ -5,12 +5,23 @@ from Atlas.atlas import AtlasDaemon
 from Atlas.topic import Topic
 import time
 
-class TemperatureMonitorDaemon(AtlasDaemon):
+class TemperatureDaemon(AtlasDaemon):
   
   def _init(self):
     self.sensors = []
+    config = configparser.ConfigParser()
+    config.
     
-    sensor = DS18B20('28-000004f10b89')
+    for key in config['DS18B20 Sensors']:
+      sensor_id = config['DS18B20 Sensors'][key]
+      sensor = DS18B20(sensor_id)
+      topic = Topic('temperature', key, sensor.get_temperature())
+      publisher = self.get_publisher(topic)
+      self.sensors.append((sensor, publisher))
+      self.logger.info('DS18B20 Sensors sensor instantiated: ' 
+                        + key + ', ' + sensor_id)
+    
+    """sensor = DS18B20('28-000004f10b89')
     topic = Topic('temperature', 'sensor1', sensor.get_temperature())
     publisher = self.get_publisher(topic)
     self.sensors.append((sensor, publisher))
@@ -23,7 +34,7 @@ class TemperatureMonitorDaemon(AtlasDaemon):
     sensor = DS18B20('28-00000522683f')
     topic = Topic('temperature', 'sensor3', sensor.get_temperature())
     publisher = self.get_publisher(topic)
-    self.sensors.append((sensor, publisher))
+    self.sensors.append((sensor, publisher))"""
     
   def _loop(self):
     for sensor in self.sensors:
@@ -43,7 +54,7 @@ if __name__ == '__main__':
     datefmt='%H:%M:%S',
     level=logging.INFO)
   logger = logging.getLogger(__name__)
-  daemon = TemperatureMonitorDaemon('/var/run/' + file_name + '.pid')
+  daemon = TemperatureDaemon('/var/run/' + file_name + '.pid')
   if len(sys.argv) == 2:
     if 'start' == sys.argv[1]:
       daemon.start()

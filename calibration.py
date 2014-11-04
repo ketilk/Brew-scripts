@@ -10,8 +10,6 @@ from Atlas.atlas import AtlasDaemon, AtlasError
 from Atlas.topic import Topic
 from Interfaces.bbio import OutputPin
 
-from __future__ import print_function
-
 class CalibrationDaemon(AtlasDaemon):
   def _init(self):
     self.atlas.register_topic_handler(self._logger)
@@ -28,7 +26,8 @@ class CalibrationDaemon(AtlasDaemon):
     self.log_period = 20
     self.triplets = []
     self.topics = []
-    self.data_file = "data.csv"
+    
+    self.atlas.register_topic_handler(self._logger)
     
     subscriber = self.get_subscriber(Topic("temperature", "sensor1"))
     average_temp = Average(subscriber.topic.data, 10)
@@ -86,8 +85,10 @@ class CalibrationDaemon(AtlasDaemon):
           _topic.data = topic.data
     
     if self.t_log + self.log_period < time.time():
+      file = open("data.csv")
       for _topic in self.topics:
-        print(str(topic), self.data_file)
+        file.write(str(topic), self.data_file)
+      file.close()
 
 if __name__ == '__main__':
   file_name = os.path.splitext(os.path.basename(__file__))[0]
@@ -105,7 +106,7 @@ if __name__ == '__main__':
     elif 'restart' == sys.argv[1]:
       daemon.restart()
     else:
-      print "Unknown command"
+      print 'Unknown command: ' + sys.argv[1]
       sys.exit(2)
     sys.exit(0)
   else:
