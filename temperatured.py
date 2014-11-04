@@ -10,29 +10,18 @@ class TemperatureDaemon(AtlasDaemon):
   def _init(self):
     self.sensors = []
     
-    for key in self.configuration['DS18B20 Sensors']:
-      sensor_id = self.configuration['DS18B20 Sensors'][key]
+    if not self.configuration.has_section('DS18B20 Sensors'):
+      self.logger.warning('Cannot find \"DS18B20 Sensors\" section.')
+      return False
+    
+    for option in self.configuration.options('DS18B20 Sensors'):
+      sensor_id = self.configuration.get('DS18B20 Sensors', option)
       sensor = DS18B20(sensor_id)
-      topic = Topic('temperature', key, sensor.get_temperature())
+      topic = Topic('temperature', option, sensor.get_temperature())
       publisher = self.get_publisher(topic)
       self.sensors.append((sensor, publisher))
       self.logger.info('DS18B20 Sensors sensor instantiated: ' 
-                        + key + ', ' + sensor_id)
-    
-    """sensor = DS18B20('28-000004f10b89')
-    topic = Topic('temperature', 'sensor1', sensor.get_temperature())
-    publisher = self.get_publisher(topic)
-    self.sensors.append((sensor, publisher))
-    
-    sensor = DS18B20('28-000004f1f9bf')
-    topic = Topic('temperature', 'sensor2', sensor.get_temperature())
-    publisher = self.get_publisher(topic)
-    self.sensors.append((sensor, publisher))
-    
-    sensor = DS18B20('28-00000522683f')
-    topic = Topic('temperature', 'sensor3', sensor.get_temperature())
-    publisher = self.get_publisher(topic)
-    self.sensors.append((sensor, publisher))"""
+                        + option + ', ' + sensor_id)
     
   def _loop(self):
     for sensor in self.sensors:
