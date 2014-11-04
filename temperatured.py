@@ -9,11 +9,9 @@ class TemperatureDaemon(AtlasDaemon):
   
   def _init(self):
     self.sensors = []
-    config = configparser.ConfigParser()
-    config.
     
-    for key in config['DS18B20 Sensors']:
-      sensor_id = config['DS18B20 Sensors'][key]
+    for key in self.configuration['DS18B20 Sensors']:
+      sensor_id = self.configuration['DS18B20 Sensors'][key]
       sensor = DS18B20(sensor_id)
       topic = Topic('temperature', key, sensor.get_temperature())
       publisher = self.get_publisher(topic)
