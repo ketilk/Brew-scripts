@@ -14,7 +14,4 @@ logger = logging.getLogger
 atlas = Atlas()
 
 while True:
-  try:
-    print atlas.get_topic()
-  except:
-    break
+  print atlas.get_topic()
