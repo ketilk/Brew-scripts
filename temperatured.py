@@ -18,7 +18,7 @@ class TemperatureDaemon(AtlasDaemon):
       sensor_id = self.configuration.get('DS18B20 Sensors', option)
       sensor = DS18B20(sensor_id)
       topic = Topic('temperature', option, sensor.get_temperature())
-      publisher = self.get_publisher(topic)
+      publisher = self.get_publisher('temperature', option)
       self.sensors.append((sensor, publisher))
       self.logger.info('DS18B20 Sensors sensor instantiated: ' 
                         + option + ', ' + sensor_id)
