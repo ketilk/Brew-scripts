@@ -17,4 +17,4 @@ try:
   while True:
     print atlas.get_topic()
 except KeyboardInterrupt:
-  return
+  pass
