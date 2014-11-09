@@ -13,5 +13,8 @@ logger = logging.getLogger
     
 atlas = Atlas()
 
-while True:
-  print atlas.get_topic()
+try:
+  while True:
+    print atlas.get_topic()
+except KeyboardInterrupt:
+  return
