@@ -3,6 +3,7 @@
 from Atlas.atlas import AtlasDaemon
 from Atlas.topic import Topic
 from Interfaces.bbio import OutputPin
+from threading import Thread
 import time
 
 class Heater(object):
