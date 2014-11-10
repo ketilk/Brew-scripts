@@ -6,17 +6,23 @@ from Interfaces.bbio import OutputPin
 import time
 
 class Heater(object):
-  def __init__(self, name, pin, period=300, power=0):
-    self.name = name
+  def __init__(self, pin, subscriber, period=300):
     self.pin = pin
-    self.power = power
+    self.subscriber = subscriber
+    self.power = 0
     self.period = period
-    self.thread = Thread(target=self._run)
-    self.thread.setDaemon()
-    self.thread.start()
+    self.control_thread = Thread(target=self._run)
+    self.control_thread.setDaemon()
+    self.control_thread.start()
+    self.power_thread = Thread(target=self._power)
+    self.power_thread.setDaemon()
+    self.power_thread.start()
   
-  def update_power(self, power):
-    self.power = power
+  def get_power(self):
+    return self.power
+  
+  def get_state(self):
+    return self.pin.get_state()
   
   def _run(self):
     t0 = 0
@@ -30,7 +36,15 @@ class Heater(object):
       elif t0 + self.power * self.period < time.time():
         if self.pin.get_state():
           self.pin.set_low()
-      time.sleep(0.1)
+      time.sleep(1)
+  
+  def _power(self):
+    while True:
+      power = self.subscriber.get_data(60)
+      if power:
+        self.power = power
+      else:
+        power = 0
   
 class HeaterDaemon(AtlasDaemon):
   
@@ -40,26 +54,25 @@ class HeaterDaemon(AtlasDaemon):
       self.logger.warning('Cannot find \"Heaters\" section.')
       return False
     
-    self.period = 300
-    self.heaters = []
-    self.subscribers = []
-    self.publishers = []
+    self.period = None
+    self.pub_heater_tuplets = []
     
     for option in self.configuration.options('Heaters'):
       if option == 'period':
         self.period = float(self.configuration.get('Heaters', option))
       else:
         pin = OutputPin(self.configuration.get('Heaters', option))
-        heater = Heater(option, pin, self.period)
-        heaters.append(heater)
-        subscriber = self.atlas.get_suscriber()
-        topic = Topic('power', option, heater.power)
-        self.publishers
+        subscriber = self.get_subscriber('heater power', 'controller.' + option)
+        heater = Heater(pin, subscriber, self.period)
+        publisher1 = self.get_publisher('heater power', option)
+        publisher2 = self.get_publisher('state', option)
+        self.pub_heater_tuplets.append((publisher1, publisher2, heater))
     return True
     
   def _loop(self):
-    for sensor in self.sensors:
-      sensor[1].publish(sensor[0].get_temperature())
+    for pub_heater_tuplet in self.pub_heater_tuplets:
+      pub_heater_tuplet[0].publish(pub_heater_tuplet[2].get_power())
+      pub_heater_tuplet[1].publish(pub_heater_tuplet[2].get_state())
     time.sleep(1)
 
 import logging
