@@ -13,10 +13,10 @@ class Heater(object):
     self.power = 0
     self.period = period
     self.control_thread = Thread(target=self._run)
-    self.control_thread.setDaemon()
+    self.control_thread.setDaemon(True)
     self.control_thread.start()
     self.power_thread = Thread(target=self._power)
-    self.power_thread.setDaemon()
+    self.power_thread.setDaemon(True)
     self.power_thread.start()
   
   def get_power(self):
