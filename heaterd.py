@@ -15,37 +15,36 @@ class Heater(object):
     self.control_thread = Thread(target=self._run)
     self.control_thread.setDaemon(True)
     self.control_thread.start()
-    self.power_thread = Thread(target=self._power)
-    self.power_thread.setDaemon(True)
-    self.power_thread.start()
   
   def get_power(self):
     return self.power
   
   def get_state(self):
-    return self.pin.get_state()
+    if self.pin.get_state():
+      return 1
+    else:
+      return 0
   
   def _run(self):
     t0 = 0
     while True:
+      power = self.subscriber.get_data(0.5)
+      if power:
+        self.power = power
+      else:
+        if t0 + 0.5 * self.period < time.time():
+          self.power = 0
       if self.power <= 0:
         if self.pin.get_state():
           self.pin.set_low()
       elif t0 + self.period < time.time():
         t0 = time.time()
-        self.pin.set_high()
+        if 0 < self.power:
+          self.pin.set_high()
       elif t0 + self.power * self.period < time.time():
         if self.pin.get_state():
           self.pin.set_low()
       time.sleep(1)
-  
-  def _power(self):
-    while True:
-      power = self.subscriber.get_data(60)
-      if power:
-        self.power = power
-      else:
-        power = 0
   
 class HeaterDaemon(AtlasDaemon):
   
@@ -63,9 +62,9 @@ class HeaterDaemon(AtlasDaemon):
         self.period = float(self.configuration.get('Heaters', option))
       else:
         pin = OutputPin(self.configuration.get('Heaters', option))
-        subscriber = self.get_subscriber('heater power', 'controller.' + option)
+        subscriber = self.get_subscriber('power', 'controller.' + option)
         heater = Heater(pin, subscriber, self.period)
-        publisher1 = self.get_publisher('heater power', option)
+        publisher1 = self.get_publisher('power', option)
         publisher2 = self.get_publisher('state', option)
         self.pub_heater_tuplets.append((publisher1, publisher2, heater))
     return True
