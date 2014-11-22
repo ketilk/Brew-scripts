@@ -5,16 +5,16 @@ import logging
 import time
 
 logging.basicConfig(filename="tail.log",
-  filemode='a',
-  format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-  datefmt='%H:%M:%S',
-  level=logging.DEBUG)
+                    filemode='a',
+                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                    datefmt='%H:%M:%S',
+                    level=logging.DEBUG)
 logger = logging.getLogger
-    
+
 atlas = Atlas()
 
 try:
-  while True:
-    print atlas.get_topic()
+    while True:
+        print atlas.get_topic()
 except KeyboardInterrupt:
-  pass
+    pass
