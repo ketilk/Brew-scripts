@@ -8,9 +8,10 @@ import time
 
 
 class Heater(object):
-    def __init__(self, pin, subscriber, period=300):
+    def __init__(self, pin, max_power, period):
         self.pin = pin
-        self.subscriber = subscriber
+        self.max_power = max_power
+        self.power_set = 0
         self.power = 0
         self.period = period
         self.control_thread = Thread(target=self._run)
@@ -20,29 +21,25 @@ class Heater(object):
     def get_power(self):
         return self.power
 
+    def set_power(self, power):
+        self.power_set = time.time()
+        self.power = power
+
     def get_state(self):
-        if self.pin.get_state():
-            return 1
-        else:
-            return 0
+        return self.pin.get_state()
 
     def _run(self):
         t0 = 0
         while True:
-            power = self.subscriber.get_data(0.5)
-            if power:
-                self.power = power
-            else:
-                if t0 + 0.5 * self.period < time.time():
-                    self.power = 0
+            if self.power_set + 0.5 * self.period < time.time():
+                self.power = 0
             if self.power <= 0:
                 if self.pin.get_state():
                     self.pin.set_low()
             elif t0 + self.period < time.time():
                 t0 = time.time()
-                if 0 < self.power:
-                    self.pin.set_high()
-            elif t0 + self.power * self.period < time.time():
+                self.pin.set_high()
+            elif t0 + self.power / self.max_power * self.period < time.time():
                 if self.pin.get_state():
                     self.pin.set_low()
             time.sleep(1)
@@ -55,25 +52,29 @@ class HeaterDaemon(AtlasDaemon):
             self.logger.warning('Cannot find \"Heaters\" section.')
             return False
 
-        self.period = None
-        self.pub_heater_tuplets = []
+        period = 300
+        self.tuplets = []
 
         for option in self.configuration.options('Heaters'):
             if option == 'period':
-                self.period = float(self.configuration.get('Heaters', option))
+                period = float(self.configuration.get('Heaters', option))
             else:
-                pin = OutputPin(self.configuration.get('Heaters', option))
+                arguments = self.configuration.get('Heaters', option).split(',')
+                pin = OutputPin(arguments[0])
+                max_power = arguments[1]
                 subscriber = self.get_subscriber('power', 'controller.' + option)
-                heater = Heater(pin, subscriber, self.period)
-                publisher1 = self.get_publisher('power', option)
-                publisher2 = self.get_publisher('state', option)
-                self.pub_heater_tuplets.append((publisher1, publisher2, heater))
+                heater = Heater(pin, max_power, period)
+                power_publisher = self.get_publisher('power', option)
+                state_publisher = self.get_publisher('state', option)
+                self.tuplets.append((subscriber, heater, power_publisher, state_publisher))
         return True
 
     def _loop(self):
-        for pub_heater_tuplet in self.pub_heater_tuplets:
-            pub_heater_tuplet[0].publish(pub_heater_tuplet[2].get_power())
-            pub_heater_tuplet[1].publish(pub_heater_tuplet[2].get_state())
+        for tuplet in self.pub_heater_tuplets:
+            subscriber, heater, power_publisher, state_publisher = tuplet
+            heater.set_power(subscriber.get_data(0.05))
+            power_publisher.publish(heater.get_power())
+            state_publisher.publish(heater.get_state())
         time.sleep(1)
 
 
