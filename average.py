@@ -1,22 +1,20 @@
+import math
+
+
 class Average(object):
-    def __init__(self, value, n=5):
+    def __init__(self, n=5):
         self.n = n
         self.values = []
-        self.values.append(value)
 
     def update(self, value):
-        if len(self.values) == self.n:
+        self.values.append(value)
+        if len(self.values) == self.n + 1:
             self.values.pop(0)
 
-        self.values.append(value)
-
-        return self.get_value()
-
     def get_value(self):
-        sorted_list = sorted(self.values)
-
-        if 3 <= len(self.values):
-            sorted_list.pop(0)
-            sorted_list.pop()
-
-        return sum(sorted_list) / len(sorted_list)
+        if len(self.values) == self.n:
+            sorted_list = sorted(self.values)
+            n = int(math.ceil(self.n / 3))
+            return sum(sorted_list[n:-n]) / (self.n - 2 * n)
+        else:
+            raise ArithmeticError()
